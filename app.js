@@ -5,9 +5,6 @@
     WATCHLIST: "thrift_scout_watchlist_v1"
   };
 
-  // Current 2026 US seller fees:
-  // Depop US: 0% selling fee, 3.3% + $0.45 payment processing fee.
-  // Vinted US: 0% seller fee + $0.00 fixed fee (buyer pays protection fee).
   const DEFAULT_SETTINGS = {
     profitTarget: 5.0,
     depopPct: 3.3,
@@ -53,6 +50,13 @@
     itemsGrid: document.getElementById("itemsGrid"),
     dataUpdatedText: document.getElementById("dataUpdatedText"),
 
+    // Live Search Comps Bar
+    searchCompBar: document.getElementById("searchCompBar"),
+    searchCompQueryText: document.getElementById("searchCompQueryText"),
+    searchEbaySoldBtn: document.getElementById("searchEbaySoldBtn"),
+    searchDepopBtn: document.getElementById("searchDepopBtn"),
+    searchVintedBtn: document.getElementById("searchVintedBtn"),
+
     // Calculator
     calcPrefillLabel: document.getElementById("calcPrefillLabel"),
     calcBuyPrice: document.getElementById("calcBuyPrice"),
@@ -95,6 +99,9 @@
     modalKeywords: document.getElementById("modalKeywords"),
     modalHowToSpot: document.getElementById("modalHowToSpot"),
     modalWhatToCheck: document.getElementById("modalWhatToCheck"),
+    modalEbaySoldLink: document.getElementById("modalEbaySoldLink"),
+    modalDepopLink: document.getElementById("modalDepopLink"),
+    modalVintedLink: document.getElementById("modalVintedLink"),
     modalCalcBtn: document.getElementById("modalCalcBtn"),
     modalFavBtn: document.getElementById("modalFavBtn"),
 
@@ -105,6 +112,15 @@
     navCalc: document.getElementById("navCalc"),
     navSettings: document.getElementById("navSettings")
   };
+
+  function getCompUrls(query) {
+    const q = encodeURIComponent(query.trim());
+    return {
+      ebaySold: `https://www.ebay.com/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1`,
+      depop: `https://www.depop.com/search/?q=${q}`,
+      vinted: `https://www.vinted.com/catalog?search_text=${q}`
+    };
+  }
 
   function loadSettings() {
     try {
@@ -121,7 +137,7 @@
     try {
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
     } catch (e) {
-      // Ignore storage quota errors in private mode
+      // Ignore quota errors
     }
   }
 
@@ -161,7 +177,6 @@
         fixed: Number(state.settings.vintedFixed) || 0
       };
     }
-    // For "Depop" or "Both", use Depop fee rates as conservative baseline
     return {
       pct: Number(state.settings.depopPct) || 0,
       fixed: Number(state.settings.depopFixed) || 0
@@ -260,7 +275,23 @@
     return list;
   }
 
+  function updateSearchCompBar() {
+    const q = state.searchQuery.trim();
+    if (q && (state.mode === "hot" || state.mode === "all" || state.mode === "watchlist")) {
+      const urls = getCompUrls(q);
+      els.searchCompQueryText.textContent = q;
+      els.searchEbaySoldBtn.href = urls.ebaySold;
+      els.searchDepopBtn.href = urls.depop;
+      els.searchVintedBtn.href = urls.vinted;
+      els.searchCompBar.style.display = "block";
+    } else {
+      els.searchCompBar.style.display = "none";
+    }
+  }
+
   function renderBrowseList() {
+    updateSearchCompBar();
+
     const items = getFilteredItems();
     const q = state.searchQuery.trim();
 
@@ -284,7 +315,7 @@
       empty.className = "empty-state";
       empty.textContent = state.mode === "watchlist"
         ? "No items starred yet. Tap ☆ on any item card to pin it to your Watchlist."
-        : "No matching items found. Try clearing your search or switching category tabs.";
+        : "No matching catalog items found. Use the 1-Tap Live Comps above to search sold comps for this phrase!";
       els.itemsGrid.appendChild(empty);
       return;
     }
@@ -296,6 +327,8 @@
       const isFav = state.watchlist.includes(item.id);
       const maxBuy = getItemMaxBuy(item);
       const maxBuyDisplay = maxBuy >= 1 ? `$${Math.floor(maxBuy)}` : formatMoney(maxBuy);
+      const compTargetQuery = item.compQuery || item.name;
+      const urls = getCompUrls(compTargetQuery);
 
       card.innerHTML = `
         <div class="card-top">
@@ -321,12 +354,23 @@
             </span>
           </div>
         </div>
+        <div class="card-comp-row">
+          <span class="comp-row-label">Comps:</span>
+          <a class="card-comp-btn" href="${urls.ebaySold}" target="_blank" rel="noopener noreferrer">🏷️ eBay Sold</a>
+          <a class="card-comp-btn" href="${urls.depop}" target="_blank" rel="noopener noreferrer">📱 Depop</a>
+        </div>
       `;
 
       const favBtn = card.querySelector(".fav-btn");
       favBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         toggleWatchlist(item.id);
+      });
+
+      card.querySelectorAll(".card-comp-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+        });
       });
 
       card.addEventListener("click", () => {
@@ -343,6 +387,8 @@
 
     state.activeModalItemId = item.id;
     const maxBuy = getItemMaxBuy(item);
+    const compTargetQuery = item.compQuery || item.name;
+    const urls = getCompUrls(compTargetQuery);
 
     els.modalCategory.textContent = item.category;
     els.modalTitle.textContent = item.name;
@@ -355,6 +401,11 @@
     els.modalSoldRange.textContent = formatWholeRange(item.typicalSoldPrice);
     els.modalMaxPay.textContent = formatMoney(maxBuy);
     els.modalEstShip.textContent = formatMoney(item.estShippingCost);
+
+    // Populate Modal Comps Links
+    els.modalEbaySoldLink.href = urls.ebaySold;
+    els.modalDepopLink.href = urls.depop;
+    els.modalVintedLink.href = urls.vinted;
 
     els.modalKeywords.innerHTML = "";
     item.brandsOrKeywords.forEach((kw) => {
