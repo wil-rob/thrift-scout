@@ -23,6 +23,9 @@
       --amber-bg: #fef3c7;
       --radius: 12px;
       --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --ebay-color: #0064d2;
+      --depop-color: #e11900;
+      --vinted-color: #007782;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -42,6 +45,9 @@
         --amber: #fbbf24;
         --amber-bg: #78350f;
         --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        --ebay-color: #2563eb;
+        --depop-color: #ef4444;
+        --vinted-color: #0d9488;
       }
     }
 
@@ -180,6 +186,61 @@
 
     main {
       padding: 16px;
+    }
+
+    /* Live Search Comp Action Bar */
+    .search-comp-bar {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+      display: none;
+    }
+
+    .search-comp-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .search-comp-title strong {
+      color: var(--text);
+    }
+
+    .search-comp-buttons, .comp-action-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .comp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: #ffffff;
+      flex: 1 1 calc(50% - 4px);
+      text-align: center;
+    }
+
+    .comp-btn-ebay {
+      background-color: var(--ebay-color);
+    }
+
+    .comp-btn-depop {
+      background-color: var(--depop-color);
+    }
+
+    .comp-btn-vinted {
+      background-color: var(--vinted-color);
     }
 
     .section-header {
@@ -323,6 +384,43 @@
 
     .pay-max.tight {
       color: var(--red);
+    }
+
+    /* Card Comps 1-Tap Row */
+    .card-comp-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .comp-row-label {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .card-comp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+      flex: 1;
+      border: 1px solid var(--border);
+      background-color: var(--surface-alt);
+      color: var(--text);
+    }
+
+    .card-comp-btn:active {
+      background-color: var(--border);
     }
 
     .empty-state {
@@ -523,7 +621,7 @@
       font-size: 0.82rem;
       text-transform: uppercase;
       color: var(--text-muted);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       letter-spacing: 0.04em;
     }
 
@@ -614,6 +712,16 @@
     <main>
       <!-- Browse / Home / All / Watchlist View -->
       <section id="browseView" class="view-panel active">
+        <!-- Live Search Comp Action Bar -->
+        <div id="searchCompBar" class="search-comp-bar">
+          <div class="search-comp-title">1-Tap Live Comps for "<strong id="searchCompQueryText"></strong>":</div>
+          <div class="search-comp-buttons">
+            <a id="searchEbaySoldBtn" class="comp-btn comp-btn-ebay" target="_blank" rel="noopener noreferrer">🏷️ eBay Sold Comps</a>
+            <a id="searchDepopBtn" class="comp-btn comp-btn-depop" target="_blank" rel="noopener noreferrer">📱 Depop Search</a>
+            <a id="searchVintedBtn" class="comp-btn comp-btn-vinted" target="_blank" rel="noopener noreferrer">👗 Vinted Search</a>
+          </div>
+        </div>
+
         <div class="section-header">
           <h2 id="listHeading" class="section-title">🔥 Hot Right Now (Top 12)</h2>
           <span id="listCount" class="section-subtitle"></span>
@@ -778,6 +886,15 @@
         <div class="detail-stat">
           <div class="metric-label">Est. Shipping</div>
           <div id="modalEstShip" class="metric-val"></div>
+        </div>
+      </div>
+
+      <div class="detail-block">
+        <h4>1-Tap Sold & Resale Comps</h4>
+        <div class="comp-action-grid">
+          <a id="modalEbaySoldLink" class="comp-btn comp-btn-ebay" target="_blank" rel="noopener noreferrer">🏷️ eBay Sold Comps</a>
+          <a id="modalDepopLink" class="comp-btn comp-btn-depop" target="_blank" rel="noopener noreferrer">📱 Depop Search</a>
+          <a id="modalVintedLink" class="comp-btn comp-btn-vinted" target="_blank" rel="noopener noreferrer">👗 Vinted Search</a>
         </div>
       </div>
 
